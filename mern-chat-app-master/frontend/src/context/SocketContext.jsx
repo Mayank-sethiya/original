@@ -15,8 +15,8 @@ export const SocketContextProvider = ({ children }) => {
 
 	useEffect(() => {
 		if (authUser) {
-			// ✅ FORCE LOCALHOST (Replace Render URL with this)
-			const socket = io("http://localhost:5000", {
+			// Using your specific Render URL
+			const socket = io("https://chat-app-lmgi.onrender.com", {
 				query: {
 					userId: authUser._id,
 				},
