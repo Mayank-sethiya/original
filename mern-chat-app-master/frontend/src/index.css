@@ -57,3 +57,17 @@ body {
 		transform: translate3d(4px, 0, 0);
 	}
 }
+
+/* Custom Floating Comet Animation */
+@keyframes floating-comet {
+    0%, 100% { 
+        transform: translateY(0px) translateX(0px) rotate(0deg); 
+    }
+    50% { 
+        transform: translateY(-4px) translateX(3px) rotate(-8deg); 
+    }
+}
+
+.animate-comet {
+    animation: floating-comet 3s ease-in-out infinite;
+}

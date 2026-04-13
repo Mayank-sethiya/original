@@ -2,64 +2,54 @@ import { useSocketContext } from "../../context/SocketContext";
 import useConversation from "../../zustand/useConversation";
 
 const Conversation = ({ conversation, lastIdx, emoji }) => {
-	const { selectedConversation, setSelectedConversation } = useConversation();
+    const { selectedConversation, setSelectedConversation, unreadMessages, clearUnreadMessages } = useConversation();
 
-	const isSelected = selectedConversation?._id === conversation._id;
-	const { onlineUsers } = useSocketContext();
-	const isOnline = onlineUsers.includes(conversation._id);
+    const isSelected = selectedConversation?._id === conversation._id;
+    const { onlineUsers } = useSocketContext();
+    const isOnline = onlineUsers.includes(conversation._id);
 
-	return (
-		<>
-			<div
-				className={`flex gap-2 items-center hover:bg-sky-500 rounded p-2 py-1 cursor-pointer
-				${isSelected ? "bg-sky-500" : ""}
-			`}
-				onClick={() => setSelectedConversation(conversation)}
-			>
-				<div className={`avatar ${isOnline ? "online" : ""}`}>
-					<div className='w-12 rounded-full'>
-						<img src={conversation.profilePic} alt='user avatar' />
-					</div>
-				</div>
+    const profilePic = conversation.profilePic || "/default-avatar.png";
+    const unreadCount = unreadMessages[conversation._id] || 0; 
 
-				<div className='flex flex-col flex-1'>
-					<div className='flex gap-3 justify-between'>
-						<p className='font-bold text-gray-200'>{conversation.fullName}</p>
-						<span className='text-xl'>{emoji}</span>
-					</div>
-				</div>
-			</div>
+    const handleSelect = () => {
+        setSelectedConversation(conversation);
+        clearUnreadMessages(conversation._id);
+    };
 
-			{!lastIdx && <div className='divider my-0 py-0 h-1' />}
-		</>
-	);
+    return (
+        <>
+            <div
+                className={`flex gap-3 items-center hover:bg-slate-800 rounded-xl p-3 cursor-pointer transition-colors
+                ${isSelected ? "bg-slate-800 border-l-4 border-blue-500" : "border-l-4 border-transparent"}
+            `}
+                onClick={handleSelect}
+            >
+                <div className={`avatar ${isOnline ? "online" : ""}`}>
+                    <div className='w-11 rounded-full shadow-sm bg-slate-700'>
+                        <img src={profilePic} alt='avatar' onError={(e) => { e.target.src = "/default-avatar.png"; }} />
+                    </div>
+                </div>
+
+                <div className='flex flex-col flex-1 overflow-hidden'>
+                    <div className='flex gap-2 justify-between items-center'>
+                        <p className={`text-[15px] font-semibold truncate ${isSelected ? "text-white" : "text-gray-300"}`}>
+                            {conversation.fullName}
+                        </p>
+                        
+                        <div className="flex items-center gap-3">
+                            {unreadCount > 0 && !isSelected && (
+                                <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shadow-[0_0_8px_rgba(37,99,235,0.8)]">
+                                    {unreadCount}
+                                </span>
+                            )}
+                            {/* ⚡ INCREASED EMOJI SIZE HERE */}
+                            <span className='text-2xl drop-shadow-md'>{emoji}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {!lastIdx && <div className='divider my-0 py-0 h-[1px] bg-slate-800/50 mx-2' />}
+        </>
+    );
 };
 export default Conversation;
-
-// STARTER CODE SNIPPET
-// const Conversation = () => {
-// 	return (
-// 		<>
-// 			<div className='flex gap-2 items-center hover:bg-sky-500 rounded p-2 py-1 cursor-pointer'>
-// 				<div className='avatar online'>
-// 					<div className='w-12 rounded-full'>
-// 						<img
-// 							src='https://cdn0.iconfinder.com/data/icons/communication-line-10/24/account_profile_user_contact_person_avatar_placeholder-512.png'
-// 							alt='user avatar'
-// 						/>
-// 					</div>
-// 				</div>
-
-// 				<div className='flex flex-col flex-1'>
-// 					<div className='flex gap-3 justify-between'>
-// 						<p className='font-bold text-gray-200'>John Doe</p>
-// 						<span className='text-xl'>🎃</span>
-// 					</div>
-// 				</div>
-// 			</div>
-
-// 			<div className='divider my-0 py-0 h-1' />
-// 		</>
-// 	);
-// };
-// export default Conversation;

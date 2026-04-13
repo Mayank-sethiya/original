@@ -1,38 +1,44 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import Message from "../models/message.model.js";
 
 const app = express();
-
 const server = http.createServer(app);
 const io = new Server(server, {
-	cors: {
-		origin: ["http://localhost:3000", "https://chat-app-mayank.onrender.com"],
-		methods: ["GET", "POST"],
-	},
+    cors: { origin: ["http://localhost:3000"], methods: ["GET", "POST"] },
 });
 
-export const getReceiverSocketId = (receiverId) => {
-	return userSocketMap[receiverId];
-};
-
-const userSocketMap = {}; // {userId: socketId}
+export const getReceiverSocketId = (receiverId) => userSocketMap[receiverId];
+const userSocketMap = {}; 
 
 io.on("connection", (socket) => {
-	console.log("a user connected", socket.id);
+    const userId = socket.handshake.query.userId;
+    if (userId !== "undefined") userSocketMap[userId] = socket.id;
 
-	const userId = socket.handshake.query.userId;
-	if (userId != "undefined") userSocketMap[userId] = socket.id;
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
-	// io.emit() is used to send events to all the connected clients
-	io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    // Handle real-time read receipts safely
+    socket.on("markMessagesAsSeen", async ({ conversationId, senderId }) => {
+        try {
+            await Message.updateMany(
+                { senderId: senderId, receiverId: userId, seen: false },
+                { $set: { seen: true } }
+            );
 
-	// socket.on() is used to listen to the events. can be used both on client and server side
-	socket.on("disconnect", () => {
-		console.log("user disconnected", socket.id);
-		delete userSocketMap[userId];
-		io.emit("getOnlineUsers", Object.keys(userSocketMap));
-	});
+            const senderSocketId = getReceiverSocketId(senderId);
+            if (senderSocketId) {
+                io.to(senderSocketId).emit("messagesSeen", { conversationId: userId });
+            }
+        } catch (error) {
+            console.log("Socket Seen Error:", error);
+        }
+    });
+
+    socket.on("disconnect", () => {
+        delete userSocketMap[userId];
+        io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    });
 });
 
 export { app, io, server };
