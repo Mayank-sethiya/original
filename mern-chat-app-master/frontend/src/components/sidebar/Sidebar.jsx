@@ -4,14 +4,13 @@ import LogoutButton from "./LogoutButton";
 import useListenMessages from "../../hooks/useListenMessages"; 
 
 const Sidebar = () => {
-    
     useListenMessages();
 
     return (
-        <div className='border-r border-slate-700 p-4 flex flex-col w-full md:w-[320px] min-w-[280px] bg-[#0b101a] z-10'>
+        // ⚡ Changed to strictly w-full and h-full to stop it from fighting Home.jsx
+        <div className='border-r border-slate-700 p-4 flex flex-col w-full h-full bg-[#0b101a] z-10'>
             
             <div className="flex items-center gap-2 w-full mb-4 px-2">
-                {/* ⚡ THE UPDATED CONTINUOUS FLOATING COMET */}
                 <span className="text-2xl inline-block animate-comet drop-shadow-[0_0_12px_rgba(96,165,250,0.9)]">
                     ☄️
                 </span>
