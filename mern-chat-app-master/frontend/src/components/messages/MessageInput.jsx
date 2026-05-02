@@ -54,14 +54,22 @@ const MessageInput = () => {
         e.preventDefault();
         if (!message) return;
         
-        const timeToSchedule = scheduledAt;
-        await sendMessage(message, scheduledAt);
+        let finalScheduledTime = scheduledAt;
+
+        // ⚡ THE FIX: Convert local HTML date string to a global UTC ISO string
+        if (scheduledAt) {
+            const dateObj = new Date(scheduledAt);
+            finalScheduledTime = dateObj.toISOString(); 
+        }
+        
+        // Pass the fixed ISO string to your hook
+        await sendMessage(message, finalScheduledTime);
         
         setMessage("");
         setScheduledAt("");
         setShowEmojiPicker(false);
         
-        if (timeToSchedule) {
+        if (finalScheduledTime) {
             await fetchPendingMessages(); 
         }
     };
@@ -70,7 +78,6 @@ const MessageInput = () => {
         setMessage((prev) => prev + emojiObject.emoji);
     };
 
-    // ⚡ I ACCIDENTALLY DELETED THIS IN THE LAST MESSAGE. IT IS BACK NOW! ⚡
     const openScheduleModal = () => {
         setIsScheduleModalOpen(true);
         setTimeout(() => dateInputRef.current?.showPicker(), 100);
@@ -161,7 +168,16 @@ const MessageInput = () => {
                                     {msg.scheduledAt && (
                                         <div className="flex items-center gap-1.5 text-blue-400 text-xs bg-blue-500/10 w-fit px-2 py-0.5 rounded-md">
                                             <BsCalendar size={10} />
-                                            <span>{new Date(msg.scheduledAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                                            {/* ⚡ THE FIX: Explicitly format to local time with AM/PM */}
+                                            <span>
+                                                {new Date(msg.scheduledAt).toLocaleString([], { 
+                                                    month: 'short', 
+                                                    day: 'numeric', 
+                                                    hour: '2-digit', 
+                                                    minute: '2-digit', 
+                                                    hour12: true 
+                                                })}
+                                            </span>
                                         </div>
                                     )}
                                 </div>
